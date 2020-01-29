@@ -16,6 +16,27 @@
 
 using predicat_t = bool(primes::prime_info);
 
+void print_help() {
+    std::cout <<
+                 "USAGE:                                        \n"
+                 "-b number                                     \n"
+                 "      set BOUND to number                     \n"
+                 "-t max|number                                 \n"
+                 "      set search mode:                        \n"
+                 "      max - search all primes in [1, BOUND]   \n"
+                 "      number - search first BOUND primes      \n"
+                 "-o filename                                   \n"
+                 "      output found numbers to file            \n"
+                 "-f filter_name                                \n"
+                 "      output primes that satisfy filter       \n"
+                 "      available filters are:                  \n"
+                 "          super - super primes                \n"
+                 "          sophie-germain - sophie-germain primes\n"
+                 "-h                                            \n"
+                 "      print help                              \n";
+}
+
+
 struct args {
     static const uint32_t DEFAULT_SEARCH_MAX = 100;
 
@@ -80,7 +101,7 @@ bool parse_filter(const char* str, std::function<predicat_t> &out) {
 
 bool parse_args(int argc, char** argv, args &arguments) {
     int opt;
-    while ((opt = getopt(argc, argv, "b:o:t:f:s:")) != -1) {
+    while ((opt = getopt(argc, argv, "hb:o:t:f:s:")) != -1) {
         bool res;
         switch (opt) {
             case 'b':
@@ -97,6 +118,9 @@ bool parse_args(int argc, char** argv, args &arguments) {
                 break;
             case 's':
                 res = parse_string(optarg, arguments.stat_file);
+                break;
+            case 'h':
+                res = false;
                 break;
             default:
                 return false;
@@ -121,8 +145,10 @@ std::string used_memory(primes::Primes& prime) {
 
 int main(int argc, char** argv) {
     args arguments{};
-    if (!parse_args(argc, argv, arguments))
+    if (!parse_args(argc, argv, arguments)) {
+        print_help();
         exit(0);
+    }
     primes::Primes prime_numbers;
     size_t step = 20;
     size_t numbers_per_step = arguments.bound / step;
